@@ -1,0 +1,5 @@
+content	previousfolders	chrome/content/
+locale	previousfolders	en-US	locale/en-US/
+component	{e65c9740-3367-11df-9aae-0800200c9a66}	components/previousfolders.js
+contract	@sapa.mine.nu/previousfolders;1	{e65c9740-3367-11df-9aae-0800200c9a66}
+category	profile-after-change	PreviousFolders	@sapa.mine.nu/previousfolders;1

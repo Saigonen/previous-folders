@@ -1,0 +1,12 @@
+<!ENTITY previousfolders.prefwindow.label					"Previous Folders - Options">
+<!ENTITY previousfolders.prefpane.label					"Previous Folders - Options">
+<!ENTITY previousfolders.previouslocations.caption		"Windows Explorer Previous Locations drop-down list">
+<!ENTITY previousfolders.save.check.label					"Save download location to registry">
+<!ENTITY previousfolders.save.check.tooltip				"Insert the download location into Windows Explorer Previous Locations drop-down list.">
+<!ENTITY previousfolders.temp.check.label					"Ignore Temp folder">
+<!ENTITY previousfolders.temp.check.tooltip				"Do not add Windows Temp folder into the list.">
+<!ENTITY previousfolders.remove.check.label				"Remove completed downloads">
+<!ENTITY previousfolders.remove.check.tooltip			"Automatically remove completed downloads from the Downloads window if they have an extension listed below.">
+<!ENTITY previousfolders.extensions.label					"File extensions:">
+<!ENTITY previousfolders.extensions.label.tooltip		"Only downloads with these extensions will be removed.">
+<!ENTITY previousfolders.extensions.textbox.tooltip	"Semicolon separated list of extensions.">

@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+
+<!DOCTYPE overlay SYSTEM "chrome://previousfolders/locale/options.dtd">
+
+<prefwindow id="previousfolders-options" title="&previousfolders.prefwindow.label;" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" xmlns:HTML="http://www.w3.org/1999/xhtml">
+
+	<script type="application/x-javascript" src="chrome://previousfolders/content/options.js"/>
+
+	<stringbundleset id="previousfolders-stringbundleset">
+		<stringbundle id="previousfolders-string-bundle" src="chrome://previousfolders/locale/options.properties"/>
+	</stringbundleset>
+ 
+	<prefpane label="&previousfolders.prefpane.label;" onpaneload="previousfolders.options.init()">
+		<preferences>
+			<preference id="previousfolders-save-pref" name="extensions.previousfolders.saveToRegistry" type="bool"/>
+			<preference id="previousfolders-temp-pref" name="extensions.previousfolders.ignoreTempFolder" type="bool"/>
+			<preference id="previousfolders-remove-pref" name="extensions.previousfolders.removeDownload" type="bool"/>
+			<preference id="previousfolders-extensions-pref" name="extensions.previousfolders.extensionList" type="string"/>
+		</preferences>
+		<groupbox>
+			<caption id="previousfolders-save-caption" label="&previousfolders.previouslocations.caption;"/>
+			<checkbox id="previousfolders-save-check" label="&previousfolders.save.check.label;" tooltiptext="&previousfolders.save.check.tooltip;" preference="previousfolders-save-pref" oncommand="previousfolders.options.disableTemp(!this.checked);"/>
+			<hbox>
+				<spacer style="width: 20px"/>
+				<checkbox id="previousfolders-temp-check" label="&previousfolders.temp.check.label;" tooltiptext="&previousfolders.temp.check.tooltip;" preference="previousfolders-temp-pref"/>
+			</hbox>
+		</groupbox>
+		<groupbox>
+			<caption label="Downloads window"/>
+			<checkbox id="previousfolders-remove-check" label="&previousfolders.remove.check.label;" tooltiptext="&previousfolders.remove.check.tooltip;" preference="previousfolders-remove-pref" oncommand="previousfolders.options.disableExtensions(!this.checked);"/>
+			<hbox align="center">
+				<spacer style="width: 20px"/>
+				<label  id="previousfolders-extensions-label" value="&previousfolders.extensions.label;" tooltiptext="&previousfolders.extensions.label.tooltip;" control="previousfolders-extensions-textbox"/>
+				<textbox id="previousfolders-extensions-textbox" tooltiptext="&previousfolders.extensions.textbox.tooltip;" flex="1" preference="previousfolders-extensions-pref"/>
+			</hbox>
+		</groupbox>
+	</prefpane>
+
+</prefwindow>

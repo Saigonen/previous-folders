@@ -1,0 +1,18 @@
+Save download location to Windows Explorer Previous Locations drop-down list.
+
+A lightweight download manager which allows quick access to previous folders in the File Picker window using the Windows Explorer address bar drop-down list.
+
+-------------------------------
+Previous Folders is a Firefox extension which allows users to automatically save up to 25 folders into Windows Explorer Previous Locations drop-down list. This list is available in Windows Explorer and Firefox's File Picker dialog when you click on the small down arrow on the right side of the address bar.
+
+The extension is designed as a lightweight download manager and it does not add anything to clutter the Firefox user interface since it uses the already present feature provided by Windows Explorer. This extension was created to speed up the selection of folders when you download files into various locations.
+
+<b>Features</b>
+By default download locations are saved automatically and the list holds 25 last folders. In the options dialog users can disable or enable the automatic saving. Private Browsing Mode is honored, and no saving is done when it is activated. There is also an option to ignore Windows Temp folder that might otherwise pop up into the list unintentionally when users open files directly from the browser.
+
+As a bonus the extension has an ability to automatically remove completed downloads from Firefox's Downloads windows based on the file extension. The list of file extensions is configurable, and you can for example remove most image downloads by inserting <i>"jpg;png;gif"</i> in options. By default this feature is disabled.
+
+<b>Notes</b>
+Users should be advised that this extension reads and writes into Windows registry. In Windows 7 addresses are saved into registry under the key "HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\TypedPaths". In Windows Vista the key is "HKEY_CURRENT_USER\Software\Microsoft\Internet Explorer\TypedURLs". Because of the availability of the drop-down list feature, this extension works only in Windows 7 and Windows Vista, not in Windows XP or other operating systems.
+
+p.s. Current release of Firefox has an illogical feature that selects the default download location on a site-by-site basis, i.e., based on where the user has previously saved a file from that particular site. This means that the download location initially presented to the user is not necessarily what user had used just before and consequently not the first item in the drop-down list.
