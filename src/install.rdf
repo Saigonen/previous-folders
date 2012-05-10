@@ -4,7 +4,7 @@
   <Description about="urn:mozilla:install-manifest">
     <em:id>previousfolders@sapa.mine.nu</em:id>
     <em:name>Previous Folders</em:name>
-    <em:version>1.0</em:version>
+    <em:version>1.0.1</em:version>
     <em:description>Save download location to Windows Explorer Previous Locations drop-down list.</em:description>
     <em:creator>Matti Saikkonen</em:creator>
     <em:optionsURL>chrome://previousfolders/content/options.xul</em:optionsURL>

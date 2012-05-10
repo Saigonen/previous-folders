@@ -18,61 +18,67 @@ PreviousFolders.prototype =
 	// nsIObserver
 	observe: function(subject, topic, data)
 	{
-		// Components.classes["@mozilla.org/consoleservice;1"].getService(Components.interfaces.nsIConsoleService).logStringMessage("PreviousFolders: observe called");
 		switch (topic)
 		{
 			case "profile-after-change":
 				this.listener = new PreviousFoldersDownloadProgressListener();
 				Components.classes["@mozilla.org/download-manager;1"].getService(Components.interfaces.nsIDownloadManager).addListener(this.listener);
-				Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService).addObserver(this, "private-browsing", true);
 				Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService).addObserver(this, "quit-application", true);
-				break;
-			
-			case "private-browsing":
-				if (data == "enter")
-				{
-					let prefManager = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
-					let save_pref = prefManager.getBoolPref("extensions.previousfolders.saveToRegistry");
-					prefManager.setBoolPref("extensions.previousfolders.saveToRegistryBackup", save_pref);
-					prefManager.setBoolPref("extensions.previousfolders.saveToRegistry", false);
-				} else if (data == "exit")
-				{
-					let prefManager = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
-					let save_pref = prefManager.getBoolPref("extensions.previousfolders.saveToRegistryBackup");
-					prefManager.setBoolPref("extensions.previousfolders.saveToRegistry", save_pref);
-					prefManager.clearUserPref("extensions.previousfolders.saveToRegistryBackup");
-				}
 				break;
 			
 			case "quit-application":
 				Components.classes["@mozilla.org/download-manager;1"].getService(Components.interfaces.nsIDownloadManager).removeListener(this.listener);
-				Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService).removeObserver(this, "private-browsing");
 				Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService).removeObserver(this, "quit-application");
 				break;
 		}
 	}
 }
 
-function PreviousFoldersDownloadProgressListener() {}
+function PreviousFoldersDownloadProgressListener()
+{
+	let os = Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULRuntime).OS;
+	if (os == "WINNT")
+	{
+		this._wrk = Components.classes["@mozilla.org/windows-registry-key;1"].createInstance(Components.interfaces.nsIWindowsRegKey);
+		let keys = new Array();
+		keys[0] = "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\TypedPaths"; // Windows 7
+		keys[1] = "Software\\Microsoft\\Internet Explorer\\TypedURLs"; // Windows Vista (and Windows XP)
+		for (let i=0; i<keys.length; i++)
+		{
+			try
+			{
+				this._wrk.open(this._wrk.ROOT_KEY_CURRENT_USER, keys[i], this._wrk.ACCESS_BASIC);
+				this._key = keys[i];
+				this._wrk.close();
+				break;
+			} catch (ex) {}
+		}
+	}
+}
 
 PreviousFoldersDownloadProgressListener.prototype =
 {	
+	_pbs: Components.classes["@mozilla.org/privatebrowsing;1"].getService(Components.interfaces.nsIPrivateBrowsingService),
+	_prefs: Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch),
+	_env: Components.classes["@mozilla.org/process/environment;1"].getService(Components.interfaces.nsIEnvironment),
+	_dm: Components.classes["@mozilla.org/download-manager;1"].getService(Components.interfaces.nsIDownloadManager),
+
 	// nsIDownloadProgressListener
 	onDownloadStateChange: function(state, download)
 	{
-		// Components.classes["@mozilla.org/consoleservice;1"].getService(Components.interfaces.nsIConsoleService).logStringMessage("PreviousFolders: onDownloadStateChange called");
-		let prefManager = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
 		switch (download.state)
 		{
 			case 	Components.interfaces.nsIDownloadManager.DOWNLOAD_DOWNLOADING:  
-				let save_pref = prefManager.getBoolPref("extensions.previousfolders.saveToRegistry");
-				if (save_pref)
+				let save_pref = this._prefs.getBoolPref("extensions.previousfolders.saveToRegistry");
+				let ignoreTemp_pref = this._prefs.getBoolPref("extensions.previousfolders.ignoreTempFolder");
+				// Save to registry if saveToReqistry is true and we are not in PrivateBrowsingMode and download location does not match temp folder if ignoreTempFolder is true.
+				if (save_pref && !this._pbs.privateBrowsingEnabled && !(ignoreTemp_pref && (download.targetFile.parent.path == this._env.get("TEMP"))))
 				{
 					this.addRegistryKey(download);
 				}
 				break;
 			case Components.interfaces.nsIDownloadManager.DOWNLOAD_FINISHED:
-				let remove_pref = prefManager.getBoolPref("extensions.previousfolders.removeDownload");
+				let remove_pref = this._prefs.getBoolPref("extensions.previousfolders.removeDownload");
 				if (remove_pref)
 				{
 					this.removeDownloadByExtension(download);
@@ -87,69 +93,73 @@ PreviousFoldersDownloadProgressListener.prototype =
 
 	addRegistryKey: function(download)
 	{
-		// Components.classes["@mozilla.org/consoleservice;1"].getService(Components.interfaces.nsIConsoleService).logStringMessage("PreviousFolders: addRegistryKey called");
-		let os = Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULRuntime).OS;
-		if (os != "WINNT")
+		// Helper function for finding duplicate values in arrays.
+		let contains = function(a, v) 
 		{
-			return; // Not using Windows, there's nothing we can do
+			for(let i=0; i<a.length; i++)
+				if (a[i] == v)	return true;
+			return false;
+		};
+
+		// Try to open the registry key. No need for testing since we will just exit if not successful.
+		try
+		{
+			this._wrk.open(this._wrk.ROOT_KEY_CURRENT_USER, this._key, this._wrk.ACCESS_ALL);
+		} catch (ex)
+		{
+			//Components.classes["@mozilla.org/consoleservice;1"].getService(Components.interfaces.nsIConsoleService).logStringMessage("Previous Folders: " + ex);
+			return;
 		}
-		let wrk = Components.classes["@mozilla.org/windows-registry-key;1"].createInstance(Components.interfaces.nsIWindowsRegKey);
-		let keys = new Array();
-		keys[0] = "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\TypedPaths"; // Windows 7
-		keys[1] = "Software\\Microsoft\\Internet Explorer\\TypedURLs"; // Windows Vista (and Windows XP)
-		let keyFound = false;
-		for (let i=0; i<keys.length; i++)
+
+		// Read the values from registry.
+		let values = new Array();
+		let pattern = new RegExp("^url\\d+$");
+		for (let i=0; i<this._wrk.valueCount; i++)
 		{
-			try
+			let name  = this._wrk.getValueName(i);
+			if (name.match(pattern))
 			{
-				wrk.open(wrk.ROOT_KEY_CURRENT_USER, keys[i], wrk.ACCESS_ALL);
-				keyFound = true;
-				break;
-			} catch (ex) {}
-		}
-		if (!keyFound)
-		{
-			return; // A valid key was not found in registry, there's nothing we can do
-		}
-		let prefManager = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
-		let ignoreTemp_pref = prefManager.getBoolPref("extensions.previousfolders.ignoreTempFolder");
-		let tempFolder = Components.classes["@mozilla.org/process/environment;1"].getService(Components.interfaces.nsIEnvironment).get("TEMP");
-		let file = download.targetFile;
-		if ((file.parent.path != tempFolder) || !ignoreTemp_pref)
-		{
-			let values = new Array();
-			values.push(file.parent.path);
-			for (let i=0; i<wrk.valueCount; i++)
-			{
-				let name  = wrk.getValueName(i);
-				let value = wrk.readStringValue(name);
-				if (value != file.parent.path)
-					values.push(value);
-			}
-			let maxValues = 25; // url1...url25
-			if (values.length < maxValues) maxValues = values.length;
-			for (let i=0; i<maxValues; i++)
-			{
-				wrk.writeStringValue("url"+(i+1), values[i]);
+				let value = this._wrk.readStringValue(name);
+				values[name.substr(3)] = value;
 			}
 		}
-		wrk.close();
+		// Add the new url and trim the values.
+		let urls = new Array();
+		urls.push(download.targetFile.parent.path);
+		for (let i=0; i<values.length; i++)
+		{
+			if ((values[i] != undefined) && !contains(urls, values[i]))
+				urls.push(values[i]);
+		}
+		// Limit the number of values to 25. This limit is set by Windows.
+		let limit = 25;
+		// Write values back to registry. Overwrite all the values from url1 to url25
+		for (let i=0; i<limit; i++)
+		{
+			if (i<urls.length)
+			{
+				this._wrk.writeStringValue("url" + (i+1), urls[i]);
+			} else
+			{
+				if (this._wrk.hasValue("url" + (i+1)))
+					this._wrk.removeValue("url" + (i+1));
+			}
+		}
+		this._wrk.close();
 	},
 
 	removeDownloadByExtension: function(download)
 	{
-		// Components.classes["@mozilla.org/consoleservice;1"].getService(Components.interfaces.nsIConsoleService).logStringMessage("PreviousFolders: removeDownloadByExtension called");
-		let prefManager = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
-		let extensions_pref = prefManager.getCharPref("extensions.previousfolders.extensionList");
+		let extensions_pref = this._prefs.getCharPref("extensions.previousfolders.extensionList");
 		let extensions = extensions_pref.split(";");
 		for (let i=0; i<extensions.length; i++)
 		{
 			if (extensions[i] != null && extensions[i] != "")
 			{
 				let pattern = new RegExp("\." + extensions[i] + "$","i");
-				if (pattern.test(download.displayName))
+				if (download.displayName.match(pattern))
 				{
-					Components.classes["@mozilla.org/download-manager;1"].getService(Components.interfaces.nsIDownloadManager).removeDownload(download.id);
+					this._dm.removeDownload(download.id);
 				}
 			}
 		}

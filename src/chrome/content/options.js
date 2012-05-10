@@ -12,25 +12,33 @@ previousfolders.options =
 		let privateBrowsingEnabled = Components.classes["@mozilla.org/privatebrowsing;1"].getService(Components.interfaces.nsIPrivateBrowsingService).privateBrowsingEnabled;
 		if (privateBrowsingEnabled)
 		{
-			let desc = document.createElement("description");
-			desc.setAttribute("id", "previousfolders-pbm-desc");
-			desc.setAttribute("style", "color:red");
-			let stringBundle = document.getElementById("previousfolders-string-bundle");
-			let descString = stringBundle.getString("privateBrowsingMode");
-			let descTooltip = stringBundle.getString("privateBrowsingModeTooltip");
-			desc.setAttribute("value", descString);
-			desc.setAttribute("tooltiptext", descTooltip);
-			let box = document.createElement("box");
-			box.setAttribute("pack", "center");
-			box.appendChild(desc);
-			let saveCheck = document.getElementById("previousfolders-save-check");
-			saveCheck.parentNode.insertBefore(box, saveCheck);
-		}
-		let saveChecked = document.getElementById("previousfolders-save-check").checked;
+			previousfolders.options.showPBMMessage();
+			previousfolders.options.disableSave(true);
+			previousfolders.options.disableTemp(true);
+		} else
+		{
+			let saveChecked = document.getElementById("previousfolders-save-check").checked;
+			previousfolders.options.disableTemp(!saveChecked);
+		}	
 		let removeChecked = document.getElementById("previousfolders-remove-check").checked;
-		previousfolders.options.disableSave(privateBrowsingEnabled);
-		previousfolders.options.disableTemp(!saveChecked);
 		previousfolders.options.disableExtensions(!removeChecked);
+	},
+	
+	showPBMMessage : function()
+	{
+		let desc = document.createElement("description");
+		desc.setAttribute("id", "previousfolders-pbm-desc");
+		desc.setAttribute("style", "color:purple");
+		let stringBundle = document.getElementById("previousfolders-string-bundle");
+		let descString = stringBundle.getString("privateBrowsingMode");
+		let descTooltip = stringBundle.getString("privateBrowsingModeTooltip");
+		desc.setAttribute("value", descString);
+		desc.setAttribute("tooltiptext", descTooltip);
+		let box = document.createElement("box");
+		box.setAttribute("pack", "center");
+		box.appendChild(desc);
+		let saveCheck = document.getElementById("previousfolders-save-check");
+		saveCheck.parentNode.insertBefore(box, saveCheck);
 	},
 	
 	disableSave : function(disable)
