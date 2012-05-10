@@ -12,35 +12,21 @@ previousfolders.options =
 		let privateBrowsingEnabled = Components.classes["@mozilla.org/privatebrowsing;1"].getService(Components.interfaces.nsIPrivateBrowsingService).privateBrowsingEnabled;
 		if (privateBrowsingEnabled)
 		{
-			previousfolders.options.showPBMMessage();
-			previousfolders.options.disableSave(true);
-			previousfolders.options.disableTemp(true);
+			document.getElementById("previousfolders-pbm-box").removeAttribute("hidden");
+			this.disableSave(true);
+			this.disableTemp(true);
 		} else
 		{
 			let saveChecked = document.getElementById("previousfolders-save-check").checked;
-			previousfolders.options.disableTemp(!saveChecked);
-		}	
+			this.disableTemp(!saveChecked);
+		}
+		
+		this.initClearButton();
+				
 		let removeChecked = document.getElementById("previousfolders-remove-check").checked;
-		previousfolders.options.disableExtensions(!removeChecked);
+		this.disableExtensions(!removeChecked);
 	},
-	
-	showPBMMessage : function()
-	{
-		let desc = document.createElement("description");
-		desc.setAttribute("id", "previousfolders-pbm-desc");
-		desc.setAttribute("style", "color:purple");
-		let stringBundle = document.getElementById("previousfolders-string-bundle");
-		let descString = stringBundle.getString("privateBrowsingMode");
-		let descTooltip = stringBundle.getString("privateBrowsingModeTooltip");
-		desc.setAttribute("value", descString);
-		desc.setAttribute("tooltiptext", descTooltip);
-		let box = document.createElement("box");
-		box.setAttribute("pack", "center");
-		box.appendChild(desc);
-		let saveCheck = document.getElementById("previousfolders-save-check");
-		saveCheck.parentNode.insertBefore(box, saveCheck);
-	},
-	
+		
 	disableSave : function(disable)
 	{
 		if (disable)
@@ -74,5 +60,51 @@ previousfolders.options =
 			document.getElementById("previousfolders-extensions-label").removeAttribute("disabled");
 			document.getElementById("previousfolders-extensions-textbox").removeAttribute("disabled");
 		}
+	},
+
+	initClearButton : function()
+	{
+		let stringBundle = document.getElementById("previousfolders-string-bundle");
+		let clearButton = document.getElementById("previousfolders-clearcontent-button");
+		let count = this.countContentPrefs();
+		if (count == 0)
+		{
+			clearButton.setAttribute("disabled", "true");
+			let tooltip = stringBundle.getString("previousfolders-clearcontent-button-disabledtooltip");
+			clearButton.setAttribute("tooltiptext", tooltip);
+		} else
+		{
+			clearButton.removeAttribute("disabled");
+			let tooltip = stringBundle.getString("previousfolders-clearcontent-button-enabledtooltip");
+			tooltip = tooltip.replace("%1", count);
+			clearButton.setAttribute("tooltiptext", tooltip);
+		}
+	},
+
+	clearContentPrefs : function()
+	{
+		let count = this.countContentPrefs();
+		try
+		{
+			Components.classes["@mozilla.org/content-pref/service;1"].getService(Components.interfaces.nsIContentPrefService).removePrefsByName("browser.download.lastDir");
+
+		} catch (ex)
+		{
+			// We don't need to do anything, settings are cleared regardless.
+			// Components.classes["@mozilla.org/consoleservice;1"].getService(Components.interfaces.nsIConsoleService).logStringMessage("Previous Folders: " + ex);
+		}
+		this.initClearButton();
+	},
+	
+	countContentPrefs : function()
+	{
+		let count = 0;
+		let enumerator = Components.classes["@mozilla.org/content-pref/service;1"].getService(Components.interfaces.nsIContentPrefService).getPrefsByName("browser.download.lastDir").enumerator;
+		while (enumerator.hasMoreElements())
+		{
+			enumerator.getNext();
+			count++;
+		}
+		return count;
 	}
 };

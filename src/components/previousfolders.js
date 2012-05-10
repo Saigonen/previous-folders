@@ -21,21 +21,52 @@ PreviousFolders.prototype =
 		switch (topic)
 		{
 			case "profile-after-change":
-				this.listener = new PreviousFoldersDownloadProgressListener();
-				Components.classes["@mozilla.org/download-manager;1"].getService(Components.interfaces.nsIDownloadManager).addListener(this.listener);
+				this.downloadProgressListener = new PreviousFoldersDownloadProgressListener();
+				this.contentPrefObserver = new PreviousFoldersContentPrefObserver();
+				Components.classes["@mozilla.org/download-manager;1"].getService(Components.interfaces.nsIDownloadManager).addListener(this.downloadProgressListener);
+				Components.classes["@mozilla.org/content-pref/service;1"].getService(Components.interfaces.nsIContentPrefService).addObserver(this.contentPrefObserver.prefName, this.contentPrefObserver);
 				Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService).addObserver(this, "quit-application", true);
 				break;
 			
 			case "quit-application":
-				Components.classes["@mozilla.org/download-manager;1"].getService(Components.interfaces.nsIDownloadManager).removeListener(this.listener);
+				Components.classes["@mozilla.org/download-manager;1"].getService(Components.interfaces.nsIDownloadManager).removeListener(this.downloadProgressListener);
+				Components.classes["@mozilla.org/content-pref/service;1"].getService(Components.interfaces.nsIContentPrefService).removeObserver(this.contentPrefObserver);
 				Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService).removeObserver(this, "quit-application");
 				break;
 		}
 	}
 }
 
+function PreviousFoldersContentPrefObserver()
+{
+	this._cps = Components.classes["@mozilla.org/content-pref/service;1"].getService(Components.interfaces.nsIContentPrefService);
+	this._prefs = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
+	
+	this.prefName = "browser.download.lastDir";
+}
+
+PreviousFoldersContentPrefObserver.prototype =
+{
+	// nsIContentPrefObserver
+	onContentPrefRemoved: function (group, name) {},
+	
+	onContentPrefSet: function (group, name, value)
+	{
+		let disableContent_pref = this._prefs.getBoolPref("extensions.previousfolders.disableContentPref");
+		if (group != null && name == this.prefName && disableContent_pref)
+		{
+			this._cps.removePref(group, name);
+		}
+	}	
+}
+
 function PreviousFoldersDownloadProgressListener()
 {
+	this._pbs = Components.classes["@mozilla.org/privatebrowsing;1"].getService(Components.interfaces.nsIPrivateBrowsingService);
+	this._prefs = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
+	this._env = Components.classes["@mozilla.org/process/environment;1"].getService(Components.interfaces.nsIEnvironment);
+	this._dm = Components.classes["@mozilla.org/download-manager;1"].getService(Components.interfaces.nsIDownloadManager);
+	
 	let os = Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULRuntime).OS;
 	if (os == "WINNT")
 	{
@@ -58,12 +89,11 @@ function PreviousFoldersDownloadProgressListener()
 
 PreviousFoldersDownloadProgressListener.prototype =
 {	
-	_pbs: Components.classes["@mozilla.org/privatebrowsing;1"].getService(Components.interfaces.nsIPrivateBrowsingService),
-	_prefs: Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch),
-	_env: Components.classes["@mozilla.org/process/environment;1"].getService(Components.interfaces.nsIEnvironment),
-	_dm: Components.classes["@mozilla.org/download-manager;1"].getService(Components.interfaces.nsIDownloadManager),
-
 	// nsIDownloadProgressListener
+	onProgressChange: function() {},
+	onSecurityChange: function() {},
+	onStateChange: function() {},
+
 	onDownloadStateChange: function(state, download)
 	{
 		switch (download.state)
@@ -86,10 +116,6 @@ PreviousFoldersDownloadProgressListener.prototype =
 				break;
 		}
 	},
-
-	onProgressChange: function() {},
-	onSecurityChange: function() {},
-	onStateChange: function() {},
 
 	addRegistryKey: function(download)
 	{

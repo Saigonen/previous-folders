@@ -1,0 +1,3 @@
+Save download location to Windows Explorer previous locations drop-down list. 
+
+Get quick access to previous folders in the File Picker window using the address bar drop-down list.

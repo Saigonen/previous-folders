@@ -12,20 +12,35 @@
 	</stringbundleset>
  
 	<prefpane label="&previousfolders.prefpane.label;" onpaneload="previousfolders.options.init()">
+
 		<preferences>
 			<preference id="previousfolders-save-pref" name="extensions.previousfolders.saveToRegistry" type="bool"/>
 			<preference id="previousfolders-temp-pref" name="extensions.previousfolders.ignoreTempFolder" type="bool"/>
+			<preference id="previousfolders-disablecontent-pref" name="extensions.previousfolders.disableContentPref" type="bool"/>
 			<preference id="previousfolders-remove-pref" name="extensions.previousfolders.removeDownload" type="bool"/>
 			<preference id="previousfolders-extensions-pref" name="extensions.previousfolders.extensionList" type="string"/>
 		</preferences>
+
 		<groupbox>
 			<caption id="previousfolders-save-caption" label="&previousfolders.previouslocations.caption;"/>
+			<box id="previousfolders-pbm-box" pack="center" hidden="true">
+				<description id="previousfolders-pbm-desc" style="color:purple" value="&previousfolders.pbm.desc.value;" tooltiptext="&previousfolders.pbm.desc.tooltip;"/>
+			</box>
 			<checkbox id="previousfolders-save-check" label="&previousfolders.save.check.label;" tooltiptext="&previousfolders.save.check.tooltip;" preference="previousfolders-save-pref" oncommand="previousfolders.options.disableTemp(!this.checked);"/>
 			<hbox>
 				<spacer style="width: 20px"/>
 				<checkbox id="previousfolders-temp-check" label="&previousfolders.temp.check.label;" tooltiptext="&previousfolders.temp.check.tooltip;" preference="previousfolders-temp-pref"/>
 			</hbox>
 		</groupbox>
+
+		<groupbox>
+			<caption id="previousfolders-content-caption" label="&previousfolders.content.caption;"/>
+			<hbox>
+				<checkbox id="previousfolders-disablecontent-check" label="&previousfolders.disablecontent.check.label;" tooltiptext="&previousfolders.disablecontent.check.tooltip;" preference="previousfolders-disablecontent-pref"/>
+				<button id="previousfolders-clearcontent-button" label="&previousfolders.clearcontent.button.label;" tooltiptext="&previousfolders.clearcontent.button.tooltip;" oncommand="previousfolders.options.clearContentPrefs();"/>
+			</hbox>
+		</groupbox>
+
 		<groupbox>
 			<caption label="Downloads window"/>
 			<checkbox id="previousfolders-remove-check" label="&previousfolders.remove.check.label;" tooltiptext="&previousfolders.remove.check.tooltip;" preference="previousfolders-remove-pref" oncommand="previousfolders.options.disableExtensions(!this.checked);"/>
@@ -35,6 +50,7 @@
 				<textbox id="previousfolders-extensions-textbox" tooltiptext="&previousfolders.extensions.textbox.tooltip;" flex="1" preference="previousfolders-extensions-pref"/>
 			</hbox>
 		</groupbox>
+
 	</prefpane>
 
 </prefwindow>
