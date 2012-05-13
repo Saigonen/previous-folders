@@ -21,7 +21,7 @@ previousfolders.options =
 			this.disableTemp(!saveChecked);
 		}
 		
-		this.initClearButton();
+		this.initClearContentButton();
 				
 		let removeChecked = document.getElementById("previousfolders-remove-check").checked;
 		this.disableExtensions(!removeChecked);
@@ -62,22 +62,22 @@ previousfolders.options =
 		}
 	},
 
-	initClearButton : function()
+	initClearContentButton : function()
 	{
 		let stringBundle = document.getElementById("previousfolders-string-bundle");
-		let clearButton = document.getElementById("previousfolders-clearcontent-button");
+		let clearContentButton = document.getElementById("previousfolders-clearcontent-button");
 		let count = this.countContentPrefs();
 		if (count == 0)
 		{
-			clearButton.setAttribute("disabled", "true");
+			clearContentButton.setAttribute("disabled", "true");
 			let tooltip = stringBundle.getString("previousfolders-clearcontent-button-disabledtooltip");
-			clearButton.setAttribute("tooltiptext", tooltip);
+			clearContentButton.setAttribute("tooltiptext", tooltip);
 		} else
 		{
-			clearButton.removeAttribute("disabled");
+			clearContentButton.removeAttribute("disabled");
 			let tooltip = stringBundle.getString("previousfolders-clearcontent-button-enabledtooltip");
 			tooltip = tooltip.replace("%1", count);
-			clearButton.setAttribute("tooltiptext", tooltip);
+			clearContentButton.setAttribute("tooltiptext", tooltip);
 		}
 	},
 
@@ -93,7 +93,7 @@ previousfolders.options =
 			// We don't need to do anything, settings are cleared regardless.
 			// Components.classes["@mozilla.org/consoleservice;1"].getService(Components.interfaces.nsIConsoleService).logStringMessage("Previous Folders: " + ex);
 		}
-		this.initClearButton();
+		this.initClearContentButton();
 	},
 	
 	countContentPrefs : function()

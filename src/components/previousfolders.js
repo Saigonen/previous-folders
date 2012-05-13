@@ -1,6 +1,24 @@
 Components.utils.import("resource://gre/modules/XPCOMUtils.jsm");
 
-function PreviousFolders() {}
+function PreviousFolders()
+{
+	// Check if we have a new version of Firefox with built-in support for disabling site-specific download locations.
+	this.supportsSavePerSite = false;
+	try {
+		let appInfo = Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULAppInfo);
+		let versionComparator = Components.classes["@mozilla.org/xpcom/version-comparator;1"].getService(Components.interfaces.nsIVersionComparator);
+		if(versionComparator.compare(appInfo.version, "11") >= 0)
+			this.supportsSavePerSite = true;
+	} catch (ex) {	}	
+	
+	// Transfer and invert an old add-on preference to a new Firefox preference.
+	let prefs = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
+	if (prefs.getPrefType("extensions.previousfolders.disableContentPref"))
+	{
+		prefs.setBoolPref("browser.download.lastDir.savePerSite", !prefs.getBoolPref("extensions.previousfolders.disableContentPref"));
+		prefs.clearUserPref("extensions.previousfolders.disableContentPref");
+	}
+}
 
 PreviousFolders.prototype =
 {
@@ -21,16 +39,22 @@ PreviousFolders.prototype =
 		switch (topic)
 		{
 			case "profile-after-change":
+				if (!this.supportsSavePerSite)
+				{
+					this.contentPrefObserver = new PreviousFoldersContentPrefObserver();
+					Components.classes["@mozilla.org/content-pref/service;1"].getService(Components.interfaces.nsIContentPrefService).addObserver(this.contentPrefObserver.prefName, this.contentPrefObserver);
+				}
 				this.downloadProgressListener = new PreviousFoldersDownloadProgressListener();
-				this.contentPrefObserver = new PreviousFoldersContentPrefObserver();
 				Components.classes["@mozilla.org/download-manager;1"].getService(Components.interfaces.nsIDownloadManager).addListener(this.downloadProgressListener);
-				Components.classes["@mozilla.org/content-pref/service;1"].getService(Components.interfaces.nsIContentPrefService).addObserver(this.contentPrefObserver.prefName, this.contentPrefObserver);
 				Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService).addObserver(this, "quit-application", true);
 				break;
 			
 			case "quit-application":
+				if (!supportsSavePerSite)
+				{
+					Components.classes["@mozilla.org/content-pref/service;1"].getService(Components.interfaces.nsIContentPrefService).removeObserver(this.contentPrefObserver);
+				}
 				Components.classes["@mozilla.org/download-manager;1"].getService(Components.interfaces.nsIDownloadManager).removeListener(this.downloadProgressListener);
-				Components.classes["@mozilla.org/content-pref/service;1"].getService(Components.interfaces.nsIContentPrefService).removeObserver(this.contentPrefObserver);
 				Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService).removeObserver(this, "quit-application");
 				break;
 		}
@@ -52,8 +76,8 @@ PreviousFoldersContentPrefObserver.prototype =
 	
 	onContentPrefSet: function (group, name, value)
 	{
-		let disableContent_pref = this._prefs.getBoolPref("extensions.previousfolders.disableContentPref");
-		if (group != null && name == this.prefName && disableContent_pref)
+		let savePerSitePref = this._prefs.getBoolPref("browser.download.lastDir.savePerSite");
+		if (group != null && name == this.prefName && !savePerSitePref)
 		{
 			this._cps.removePref(group, name);
 		}
@@ -99,17 +123,17 @@ PreviousFoldersDownloadProgressListener.prototype =
 		switch (download.state)
 		{
 			case 	Components.interfaces.nsIDownloadManager.DOWNLOAD_DOWNLOADING:  
-				let save_pref = this._prefs.getBoolPref("extensions.previousfolders.saveToRegistry");
-				let ignoreTemp_pref = this._prefs.getBoolPref("extensions.previousfolders.ignoreTempFolder");
+				let savePref = this._prefs.getBoolPref("extensions.previousfolders.saveToRegistry");
+				let ignoreTempPref = this._prefs.getBoolPref("extensions.previousfolders.ignoreTempFolder");
 				// Save to registry if saveToReqistry is true and we are not in PrivateBrowsingMode and download location does not match temp folder if ignoreTempFolder is true.
-				if (save_pref && !this._pbs.privateBrowsingEnabled && !(ignoreTemp_pref && (download.targetFile.parent.path == this._env.get("TEMP"))))
+				if (savePref && !this._pbs.privateBrowsingEnabled && !(ignoreTempPref && (download.targetFile.parent.path == this._env.get("TEMP"))))
 				{
 					this.addRegistryKey(download);
 				}
 				break;
 			case Components.interfaces.nsIDownloadManager.DOWNLOAD_FINISHED:
-				let remove_pref = this._prefs.getBoolPref("extensions.previousfolders.removeDownload");
-				if (remove_pref)
+				let removePref = this._prefs.getBoolPref("extensions.previousfolders.removeDownload");
+				if (removePref)
 				{
 					this.removeDownloadByExtension(download);
 				}
@@ -176,8 +200,8 @@ PreviousFoldersDownloadProgressListener.prototype =
 
 	removeDownloadByExtension: function(download)
 	{
-		let extensions_pref = this._prefs.getCharPref("extensions.previousfolders.extensionList");
-		let extensions = extensions_pref.split(";");
+		let extensionsPref = this._prefs.getCharPref("extensions.previousfolders.extensionList");
+		let extensions = extensionsPref.split(";");
 		for (let i=0; i<extensions.length; i++)
 		{
 			if (extensions[i] != null && extensions[i] != "")

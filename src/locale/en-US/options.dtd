@@ -1,19 +1,19 @@
-<!ENTITY previousfolders.prefwindow.label					"Previous Folders - Options">
-<!ENTITY previousfolders.prefpane.label					"Previous Folders - Options">
-<!ENTITY previousfolders.previouslocations.caption		"Windows Explorer previous locations drop-down list">
-<!ENTITY previousfolders.save.check.label					"Save download location to registry">
-<!ENTITY previousfolders.save.check.tooltip				"Insert the download location into Windows Explorer previous locations drop-down list.">
-<!ENTITY previousfolders.temp.check.label					"Ignore temp folder">
-<!ENTITY previousfolders.temp.check.tooltip				"Do not add Windows temp folder into the list.">
-<!ENTITY previousfolders.remove.check.label				"Remove completed downloads">
-<!ENTITY previousfolders.remove.check.tooltip			"Automatically remove completed downloads from the Downloads window if they have an extension listed below.">
-<!ENTITY previousfolders.extensions.label					"File extensions:">
-<!ENTITY previousfolders.extensions.label.tooltip		"Only downloads with these extensions will be removed.">
-<!ENTITY previousfolders.extensions.textbox.tooltip	"Semicolon separated list of extensions.">
-<!ENTITY previousfolders.content.caption					"Content preferences">
-<!ENTITY previousfolders.disablecontent.check.label	"Disable site-specific download locations">
-<!ENTITY previousfolders.disablecontent.check.tooltip	"Save last download location in Firefox globally and not separately for every site.">
-<!ENTITY previousfolders.clearcontent.button.tooltip	"Clear all previously saved site-specific download locations.">
-<!ENTITY previousfolders.clearcontent.button.label		"Clear">
-<!ENTITY previousfolders.pbm.desc.value					"Private Browsing Mode">
-<!ENTITY previousfolders.pbm.desc.tooltip					"Saving is disabled while the browser is in Private Browsing Mode.">
+<!ENTITY previousfolders.prefwindow.label							"Previous Folders - Options">
+<!ENTITY previousfolders.prefpane.label							"Previous Folders - Options">
+<!ENTITY previousfolders.previouslocations.caption				"Windows Explorer previous locations drop-down list">
+<!ENTITY previousfolders.save.check.label							"Save download location to registry">
+<!ENTITY previousfolders.save.check.tooltip						"Insert the download location into Windows Explorer previous locations drop-down list.">
+<!ENTITY previousfolders.temp.check.label							"Ignore temp folder">
+<!ENTITY previousfolders.temp.check.tooltip						"Do not add Windows temp folder into the list.">
+<!ENTITY previousfolders.remove.check.label						"Remove completed downloads">
+<!ENTITY previousfolders.remove.check.tooltip					"Automatically remove completed downloads from the Downloads window if they have an extension listed below.">
+<!ENTITY previousfolders.extensions.label							"File extensions:">
+<!ENTITY previousfolders.extensions.label.tooltip				"Only downloads with these extensions will be removed.">
+<!ENTITY previousfolders.extensions.textbox.tooltip			"Semicolon separated list of extensions.">
+<!ENTITY previousfolders.savepersite.caption						"Content preferences">
+<!ENTITY previousfolders.savepersite.check.label				"Disable site-specific download locations">
+<!ENTITY previousfolders.savepersite.check.tooltip				"Save last download location in Firefox globally and not separately for every site.">
+<!ENTITY previousfolders.clearcontent.button.tooltip			"Clear all previously saved site-specific download locations.">
+<!ENTITY previousfolders.clearcontent.button.label				"Clear">
+<!ENTITY previousfolders.pbm.desc.value							"Private Browsing Mode">
+<!ENTITY previousfolders.pbm.desc.tooltip							"Saving is disabled while the browser is in Private Browsing Mode.">

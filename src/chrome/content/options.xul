@@ -16,9 +16,9 @@
 		<preferences>
 			<preference id="previousfolders-save-pref" name="extensions.previousfolders.saveToRegistry" type="bool"/>
 			<preference id="previousfolders-temp-pref" name="extensions.previousfolders.ignoreTempFolder" type="bool"/>
-			<preference id="previousfolders-disablecontent-pref" name="extensions.previousfolders.disableContentPref" type="bool"/>
 			<preference id="previousfolders-remove-pref" name="extensions.previousfolders.removeDownload" type="bool"/>
 			<preference id="previousfolders-extensions-pref" name="extensions.previousfolders.extensionList" type="string"/>
+			<preference id="browser-download-lastdir-savepersite-pref" name="browser.download.lastDir.savePerSite" type="bool" inverted="true"/>
 		</preferences>
 
 		<groupbox>
@@ -34,9 +34,9 @@
 		</groupbox>
 
 		<groupbox>
-			<caption id="previousfolders-content-caption" label="&previousfolders.content.caption;"/>
+			<caption id="previousfolders-savepersite-caption" label="&previousfolders.savepersite.caption;"/>
 			<hbox>
-				<checkbox id="previousfolders-disablecontent-check" label="&previousfolders.disablecontent.check.label;" tooltiptext="&previousfolders.disablecontent.check.tooltip;" preference="previousfolders-disablecontent-pref"/>
+				<checkbox id="previousfolders-savepersite-check" label="&previousfolders.savepersite.check.label;" tooltiptext="&previousfolders.savepersite.check.tooltip;" preference="browser-download-lastdir-savepersite-pref"/>
 				<button id="previousfolders-clearcontent-button" label="&previousfolders.clearcontent.button.label;" tooltiptext="&previousfolders.clearcontent.button.tooltip;" oncommand="previousfolders.options.clearContentPrefs();"/>
 			</hbox>
 		</groupbox>
